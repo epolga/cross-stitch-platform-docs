@@ -1,0 +1,21 @@
+# Ignore documentation build outputs and temp files
+*.pdf
+*.xlsx
+*.docx
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+# Ignore operational and build folders
+bin/
+obj/
+# Ignore reports and generated data
+reports/
+# Ignore node_modules and package-lock for automation scripts
+node_modules/
+package-lock.json
+# Ignore VS Code workspace settings
+.vscode/
+# Ignore cache and compression artifacts
+.a5c/
+.cache/
