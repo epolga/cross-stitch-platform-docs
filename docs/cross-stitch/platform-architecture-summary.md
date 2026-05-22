@@ -53,9 +53,12 @@ The Cross-Stitch platform spans three sibling repositories on disk, coordinated 
 - **AWS Elastic Beanstalk** is the only deploy target — `.ebextensions/04_options.config`, `.elasticbeanstalk/config.yml` pointing at `us-east-1`, application `cross-stitch-com`, branch-default environment `cross-stitch-com-env-clone` (`d:/ann/Git/cross-stitch/.ebextensions/`, `d:/ann/Git/cross-stitch/.elasticbeanstalk/config.yml:1-3`). Deploy is invoked manually with `eb deploy`.
 - Saved EB configs preserved under `saved_configs/` including `eb-configuration-2025-12-12.cfg.yml` (`d:/ann/Git/cross-stitch/saved_configs/eb-configuration-2025-12-12.cfg.yml`).
 
+### CI
+
+- No CI is configured. A `Jenkinsfile` previously existed in the repo root (Checkout → `npm install` → build → test) but was never wired to a Jenkins instance and was removed; its only commit was the original `Add Jenkinsfile`. Tests and builds are run locally via `npm run test` / `npm run build`.
+
 ### Adjacent (not in the deploy path)
 
-- **Jenkins** — `Jenkinsfile` is a CI smoke-test pipeline only: Checkout → `npm install` → `npm run build` → `npm run test || true`. No deploy stage, no `eb deploy` call, no S3/EB CLI step (`d:/ann/Git/cross-stitch/Jenkinsfile:9-30`). Optional — removing it would not affect deploys.
 - **Lighthouse** — `.lighthouse/` is a directory of saved performance trace JSON snapshots (e.g. `baby-giraffe-*.json`); there is no `.lighthouserc.js`, no scheduled job, and no reference to the directory from any deploy artifact (`d:/ann/Git/cross-stitch/.lighthouse/`). Ad-hoc performance-investigation output, not tooling.
 
 ## Uploader WPF app
@@ -213,8 +216,8 @@ All 19 contracts from `crossRepoContracts.contracts`, grouped by type and tagged
 
 - **Deploy path**: production runs on **AWS Elastic Beanstalk**, `us-east-1`, application `cross-stitch-com`, branch-default environment `cross-stitch-com-env-clone` (`d:/ann/Git/cross-stitch/.elasticbeanstalk/config.yml:1-7`). `ENVIRONMENT-SETUP.md` references the legacy env name `cross-stitch-com-env` (`d:/ann/Git/cross-stitch/ENVIRONMENT-SETUP.md`). Deploy is invoked manually with `eb deploy`; saved EB configs are preserved under `saved_configs/` (`d:/ann/Git/cross-stitch/saved_configs/eb-configuration-2025-12-12.cfg.yml`).
 - EB option configs under `.ebextensions/` (e.g. `04_options.config`) carry DynamoDB table names (`d:/ann/Git/cross-stitch/.ebextensions/04_options.config`).
+- **No CI**: tests and builds are run locally with `npm run test` / `npm run build`. A stale `Jenkinsfile` was previously in the repo root but was removed (never wired to a Jenkins instance).
 - **Not in the deploy loop**:
-  - `Jenkinsfile` is an optional CI smoke-test: Checkout → `npm install` → `npm run build` → `npm run test || true`. No deploy stage (`d:/ann/Git/cross-stitch/Jenkinsfile:9-30`).
   - `.lighthouse/` holds saved performance trace JSON snapshots from manual runs; no `.lighthouserc.js`, no scheduled job, not referenced by any deploy artifact (`d:/ann/Git/cross-stitch/.lighthouse/`).
 
 ### Uploader
