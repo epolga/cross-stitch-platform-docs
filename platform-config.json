@@ -1,0 +1,4 @@
+{
+  "pinterestTokenPath": "Uploader/secrets/pinterest_tokens.json"
+  // Add other shared variables here as needed
+}
