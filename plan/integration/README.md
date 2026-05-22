@@ -24,6 +24,9 @@ This folder contains all planning documents for integration strategies, contract
 ## Shared Secrets
 - Pinterest token file location: `Uploader/secrets/pinterest_tokens.json` (used by both projects)
 
+## Planned Contracts (not yet implemented)
+- [business-history-schema.md](./business-history-schema.md) — `CrossStitchBusinessHistory` DynamoDB table planned for Milestone 5 (Pinterest AI Agent historical memory: daily business metrics, AI analyses, design-level analytics, anomaly events). Companion S3 bucket `cross-stitch-ai-reports` for AI markdown bodies.
+
 ## References
 - See ARCHITECTURE-SUMMARY.md for a textual summary
 - See INTEGRATION-MAP.md for a visual map

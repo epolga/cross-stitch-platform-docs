@@ -127,19 +127,53 @@ Future versions should also reason about:
 
 # Milestone 5 — Historical Memory System
 
-Status: Partially completed (local JSON layer done; DynamoDB layer still planned).
+Status: Partially completed (local JSON layer done; DynamoDB layer in progress).
 
 Completed work:
 * aggregate historical reports (`build-business-history.ts` → `reports/business-history.json`)
 * trend calculations
 * moving averages (3-day, 7-day windows)
 
-Remaining work:
-* anomaly detection
-* historical memory DynamoDB layer (currently lives in local JSON)
+Remaining work (full DynamoDB persistence — every report family currently in `reports/`):
+* daily business reports → DDB
+* AI recommendation history → DDB (markdown bodies to S3)
+* AI trend-analysis artifacts → DDB + S3
+* design ↔ pin map → DDB (canonical schema name `DesignPinMap`)
+* per-design performance → DDB (`DesignPerformance`)
+* AI design insights → DDB + S3 (`AIDesignInsight`)
+* anomaly detection → new `ANOMALY_EVENT` rows
+* delete local JSON writes after a parity-verified dual-write window
 
 Estimated effort:
-1–2 focused development days remaining (DynamoDB layer)
+3–4 focused development days (revised up from original 1–2 estimate, which only covered the daily-business slice).
+
+## Storage layout
+
+Single new table: **`CrossStitchBusinessHistory`** (matches the `CrossStitchItems` single-table style — discriminator-driven, `PAY_PER_REQUEST`, same account/region).
+
+* PK `EntityType` (S) — values: `DAILY_BUSINESS`, `DAILY_GOOGLE`, `AI_RECOMMENDATION`, `AI_ANALYSIS`, `DESIGN_PIN_MAP`, `DESIGN_PERFORMANCE`, `AI_DESIGN_INSIGHT`, `ANOMALY_EVENT`
+* SK `SortKey` (S) — date (`YYYY-MM-DD`), ISO timestamp, or `date#designId` depending on entity
+* No GSIs in v1 (add only when a real query demands one)
+
+New S3 bucket: **`cross-stitch-ai-reports`** for AI markdown bodies. DDB items hold the `S3Key` pointer; bodies live at `analysis/{YYYY-MM-DD}/{timestamp}.md`.
+
+`business-history.json` becomes a *derived* artifact — recomputed on read from `DAILY_BUSINESS` rows rather than persisted.
+
+## Implementation steps
+
+1. Write schema contract [plan/integration/business-history-schema.md](../integration/business-history-schema.md) (12-section template) — gates everything else.
+2. `scripts/init-history-storage.ts` — idempotent `CreateTable` + `CreateBucket`. Not part of daily run.
+3. `src/services/historyStore.ts` — DDB wrapper with `putDailyBusiness`, `putAiRecommendation`, `putDesignPinMap`, `putDesignPerformance`, `putAiDesignInsight`, `putAnomaly`, `queryRange`.
+4. `src/services/aiArtifactStore.ts` — S3 wrapper, `putMarkdown(date, ts, body) → s3Key`.
+5. Dual-write — add DDB write next to every existing `fs.writeFileSync` in `daily-business-report.ts`, `build-recommendation-history.ts`, `test-ai-trend-analysis.ts`, `export-design-pin-map.ts`, `build-design-performance.ts`, `test-ai-design-analysis.ts`.
+6. `scripts/backfill-history.ts` — one-shot walk of every existing `reports/*.json` + AI markdown into DDB/S3. Idempotent.
+7. `scripts/verify-history-parity.ts` — daily diff between DDB-reconstructed JSON and on-disk JSON during the soak window; fail-fast on diff.
+8. Switch reads in `historyBuilder.ts` (`loadReports`) and the analysis scripts from `fs.readdirSync` to `historyStore.queryRange`.
+9. One-week dual-write soak with daily parity check.
+10. Delete JSON writes — strip `fs.writeFileSync` calls; stop generating `reports/` content; markdown lives in S3 only.
+11. `src/services/anomalyDetector.ts` — query last 30 `DAILY_BUSINESS` rows, flag >2σ deviations from trailing-7-day mean (CTR, revenue/session, profit, sessions), write `ANOMALY_EVENT` rows. Wire into `daily-run.bat` after `npm run history`. Notifications deferred to Milestone 8.
+12. IAM — add `dynamodb:PutItem/GetItem/Query/BatchWriteItem` on `CrossStitchBusinessHistory` and `s3:PutObject/GetObject` on `cross-stitch-ai-reports/*`. Becomes a Lambda role in Milestone 7.
+13. Update this section to "Completed" once steps 1–12 ship.
 
 ---
 
@@ -179,7 +213,7 @@ Album caption is used as the temporary theme/category field. Richer per-design m
 
 Remaining work for V2:
 * richer design categorization beyond album captions
-* DynamoDB persistence (see Milestone 8 in Memory and Trend Analysis)
+* DynamoDB persistence — folded into Milestone 5 (`DESIGN_PIN_MAP`, `DESIGN_PERFORMANCE`, `AI_DESIGN_INSIGHT` rows in `CrossStitchBusinessHistory`)
 
 ---
 
