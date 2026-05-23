@@ -18,4 +18,5 @@ package-lock.json
 .vscode/
 # Ignore cache and compression artifacts
 .a5c/
+.a5c_backup/
 .cache/
