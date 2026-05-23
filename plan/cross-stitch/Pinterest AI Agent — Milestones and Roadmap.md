@@ -171,7 +171,7 @@ New S3 bucket: **`cross-stitch-ai-reports`** for AI markdown bodies. DDB items h
    * [x] `build-design-performance.ts` → `batchPutDesignPerformance` (2026-05-23)
    * [x] `test-ai-trend-analysis.ts` → `putMarkdown` + `putAiAnalysis` (2026-05-23)
    * [x] `test-ai-design-analysis.ts` → `putMarkdown` + `putAiAnalysis` (2026-05-23)
-   * [ ] `build-recommendation-history.ts` — re-evaluate (currently summarizes the JSON rather than writing it; may not need a dual-write at all)
+   * [x] `build-recommendation-history.ts` — confirmed pure read-only summarizer (2026-05-23); no dual-write needed. To be repointed at `queryRange("AI_ANALYSIS")` as part of the post-soak read cutover (step 8).
 6. `scripts/backfill-history.ts` — one-shot walk of every existing `reports/*.json` + AI markdown into DDB/S3. Idempotent. **(Done 2026-05-23; 6 DAILY_BUSINESS + 3 AI_ANALYSIS rows backfilled.)**
 7. `scripts/verify-history-parity.ts` — daily diff between DDB-reconstructed JSON and on-disk JSON during the soak window; fail-fast on diff. **(Done 2026-05-23; wired into `daily-run.bat` as the final step. Soak window log: [SOAK-WINDOW.md](../../../cross-stitch/SOAK-WINDOW.md).)**
 8. Switch reads in `historyBuilder.ts` (`loadReports`) and the analysis scripts from `fs.readdirSync` to `historyStore.queryRange`.
