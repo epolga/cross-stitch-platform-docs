@@ -170,7 +170,7 @@ New S3 bucket: **`cross-stitch-ai-reports`** for AI markdown bodies. DDB items h
    * [x] `export-design-pin-map.ts` → `batchPutDesignPinMap` (2026-05-23)
    * [x] `build-design-performance.ts` → `batchPutDesignPerformance` (2026-05-23)
    * [x] `test-ai-trend-analysis.ts` → `putMarkdown` + `putAiAnalysis` (2026-05-23)
-   * [ ] `test-ai-design-analysis.ts` → `putMarkdown` + `putAiAnalysis`
+   * [x] `test-ai-design-analysis.ts` → `putMarkdown` + `putAiAnalysis` (2026-05-23)
    * [ ] `build-recommendation-history.ts` — re-evaluate (currently summarizes the JSON rather than writing it; may not need a dual-write at all)
 6. `scripts/backfill-history.ts` — one-shot walk of every existing `reports/*.json` + AI markdown into DDB/S3. Idempotent.
 7. `scripts/verify-history-parity.ts` — daily diff between DDB-reconstructed JSON and on-disk JSON during the soak window; fail-fast on diff.
