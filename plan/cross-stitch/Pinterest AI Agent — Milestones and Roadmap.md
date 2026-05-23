@@ -177,7 +177,7 @@ New S3 bucket: **`cross-stitch-ai-reports`** for AI markdown bodies. DDB items h
 8. Switch reads in `historyBuilder.ts` (`loadReports`) and the analysis scripts from `fs.readdirSync` to `historyStore.queryRange`.
 9. One-week dual-write soak with daily parity check.
 10. Delete JSON writes — strip `fs.writeFileSync` calls; stop generating `reports/` content; markdown lives in S3 only.
-11. `src/services/anomalyDetector.ts` — query last 30 `DAILY_BUSINESS` rows, flag >2σ deviations from trailing-7-day mean (CTR, revenue/session, profit, sessions), write `ANOMALY_EVENT` rows. Wire into `daily-run.bat` after `npm run history`. Notifications deferred to Milestone 8.
+11. `src/services/anomalyDetector.ts` — query last 30 `DAILY_BUSINESS` rows, flag >2σ deviations from trailing-7-day mean (CTR, revenue/session, profit, sessions), write `ANOMALY_EVENT` rows. Wire into `daily-run.bat` after `npm run history`. Notifications deferred to Milestone 8. **(Done 2026-05-23; first real detection runs once ≥8 DAILY_BUSINESS rows exist — expected 2026-05-30.)**
 12. IAM — add `dynamodb:PutItem/GetItem/Query/BatchWriteItem` on `CrossStitchBusinessHistory` and `s3:PutObject/GetObject` on `cross-stitch-ai-reports/*`. Becomes a Lambda role in Milestone 7.
 13. Update this section to "Completed" once steps 1–12 ship.
 
