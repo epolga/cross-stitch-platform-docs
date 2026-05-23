@@ -244,16 +244,22 @@ Estimated effort:
 
 # Milestone 8 — Email / Notification Layer
 
-Status: Planned.
+Status: Partially completed (anomaly notifications shipped 2026-05-23; SES delivery, daily summaries, and AI recommendation alerts remain).
 
-Planned work:
-* SES report delivery
-* alerts
-* summaries
-* anomaly notifications
+Completed work:
+* SES wiring: `CrossStitch-SES-Send` IAM policy attached to `CrossStitch-Agents`; `src/services/sesClient.ts` thin wrapper over `@aws-sdk/client-sesv2`; reuses the Uploader's verified sender `ann@cross-stitch.com` and configuration set `my-first-configuration-set`.
+* Test path: `scripts/test-email.ts` + `npm run test-email` for one-shot SES smoke tests after env or IAM changes.
+* Anomaly notifications: `src/services/anomalyNotifier.ts` queries unnotified `ANOMALY_EVENT` rows, formats a multipart text+HTML email, sends via SES, marks each row `notified=true` + `notifiedAt`. Idempotent. Wired into `daily-run.bat` as the step right after `npm run anomaly`. End-to-end verified with a synthetic row.
+* DDB schema: `markAnomalyNotified(detectedAt, metric)` added to `src/services/historyStore.ts`.
+
+Remaining work:
+* daily summary email (yesterday's KPIs + latest AI trend recommendation, sent every cron run)
+* AI recommendation alerts (notify on action changes — hold → decrease, etc.)
+* SES bounce / complaint handling
+* operational summaries
 
 Estimated effort:
-1 focused development day
+~0.5 focused development day remaining.
 
 ---
 
