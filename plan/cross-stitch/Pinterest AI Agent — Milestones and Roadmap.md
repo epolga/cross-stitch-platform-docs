@@ -165,7 +165,13 @@ New S3 bucket: **`cross-stitch-ai-reports`** for AI markdown bodies. DDB items h
 2. `scripts/init-history-storage.ts` — idempotent `CreateTable` + `CreateBucket`. Not part of daily run.
 3. `src/services/historyStore.ts` — DDB wrapper with `putDailyBusiness`, `putAiRecommendation`, `putDesignPinMap`, `putDesignPerformance`, `putAiDesignInsight`, `putAnomaly`, `queryRange`.
 4. `src/services/aiArtifactStore.ts` — S3 wrapper, `putMarkdown(date, ts, body) → s3Key`.
-5. Dual-write — add DDB write next to every existing `fs.writeFileSync` in `daily-business-report.ts`, `build-recommendation-history.ts`, `test-ai-trend-analysis.ts`, `export-design-pin-map.ts`, `build-design-performance.ts`, `test-ai-design-analysis.ts`.
+5. Dual-write — add DDB write next to every existing `fs.writeFileSync`:
+   * [x] `daily-business-report.ts` → `putDailyBusiness` (2026-05-22)
+   * [x] `export-design-pin-map.ts` → `batchPutDesignPinMap` (2026-05-23)
+   * [x] `build-design-performance.ts` → `batchPutDesignPerformance` (2026-05-23)
+   * [ ] `test-ai-trend-analysis.ts` → `putMarkdown` + `putAiAnalysis`
+   * [ ] `test-ai-design-analysis.ts` → `putMarkdown` + `putAiAnalysis`
+   * [ ] `build-recommendation-history.ts` — re-evaluate (currently summarizes the JSON rather than writing it; may not need a dual-write at all)
 6. `scripts/backfill-history.ts` — one-shot walk of every existing `reports/*.json` + AI markdown into DDB/S3. Idempotent.
 7. `scripts/verify-history-parity.ts` — daily diff between DDB-reconstructed JSON and on-disk JSON during the soak window; fail-fast on diff.
 8. Switch reads in `historyBuilder.ts` (`loadReports`) and the analysis scripts from `fs.readdirSync` to `historyStore.queryRange`.
