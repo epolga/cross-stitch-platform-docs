@@ -2,22 +2,24 @@
 
 ## Overview
 
-The Cross-Stitch platform spans four sibling repositories on disk, coordinated by a documentation hub.
+The Cross-Stitch platform spans five sibling repositories on disk, coordinated by a documentation hub.
 
-- **`cross-stitch-platform-docs/`** — documentation-only hub; no source code, no build, no tests; central knowledge base for the other repos (`d:/ann/Git/cross-stitch-platform-docs`).
+- **`cross-stitch-platform-docs/`** — documentation-only hub plus shared runtime data (e.g. `data/AlbumBoards.csv`); central knowledge base for the other repos (`d:/ann/Git/cross-stitch-platform-docs`).
 - **`cross-stitch/`** — the public-facing Next.js 15 / React 19 / TypeScript web app at `cross-stitch.com` (`d:/ann/Git/cross-stitch`, `d:/ann/Git/cross-stitch/package.json`).
-- **`Uploader/`** — a Windows-only WPF desktop tool used by the operator to ingest designs, push S3/DynamoDB content, blast newsletters via SES, manage Pinterest boards/pins, and restart the EB environment (`d:/ann/Git/Uploader`, `d:/ann/Git/Uploader/Uploader/Uploader.csproj`).
-- **`AutoPinner/`** — a .NET 8 console worker that pulls designs without a `PinID` from DynamoDB (newest first), creates Pinterest pins for them via the v5 API, and writes the returned pin id back. Runs as `--once` (cron) or `--daemon`. Spec: `cross-stitch-platform-docs/docs/tasks/TASK_AutoPinner.md`. Source: `d:/ann/Git/AutoPinner`.
-- Cross-repo coupling happens through shared AWS resources (DynamoDB, S3, Elastic Beanstalk, SES) and a shared Pinterest token file pointed to by `platform-config.json` in the docs hub (`d:/ann/Git/cross-stitch-platform-docs/platform-config.json`).
+- **`Uploader/`** — a Windows-only WPF desktop tool used by the operator to ingest designs, push S3/DynamoDB content, blast newsletters via SES, manage Pinterest boards/pins, and restart the EB environment (`d:/ann/Git/Uploader`).
+- **`AutoPinner/`** — a .NET 8 console worker that pulls designs without a `PinID` from DynamoDB (newest first), creates Pinterest pins for them, and writes the returned pin id back. Runs as `--once` (cron) or `--daemon`. Spec: `cross-stitch-platform-docs/docs/tasks/TASK_AutoPinner.md`. Source: `d:/ann/Git/AutoPinner`.
+- **`CrossStitch.Shared/`** — net8.0 class library referenced by both `Uploader` and `AutoPinner`. Holds the Pinterest upload + OAuth + SES code so it stays in one place. Source: `d:/ann/Git/CrossStitch.Shared`.
+- Cross-repo coupling happens through shared AWS resources (DynamoDB, S3, Elastic Beanstalk, SES), the shared `CrossStitch.Shared` DLL, and a shared `platform-config.json` in the docs hub that points at the Pinterest token file and the canonical `AlbumBoards.csv`.
 
 ### Repository roles
 
 | Repo | Role | Build/run | Source of truth for |
 |------|------|-----------|---------------------|
-| `cross-stitch-platform-docs/` | Planning + reference hub | None — Markdown/text/PDF/Excel only (bootstrap rules in task context) | `platform-config.json`; integration plans under `plan/integration/*`; task specs under `docs/tasks/*` |
-| `cross-stitch/` | Customer-facing site, AI Pinterest agent | `npm` / Next.js / Vitest / Playwright (`d:/ann/Git/cross-stitch/package.json`) | DynamoDB schema dump (`d:/ann/Git/cross-stitch/TableDescription.txt`); web routes |
-| `Uploader/` | Operator publishing + maintenance UI | `.NET 8 WPF` (`Uploader/Uploader.csproj`, `targetFramework: net8.0-windows`) | Pinterest token writer; `AlbumBoards.csv` (`d:/ann/Git/Uploader/Uploader/AlbumBoards.csv`) |
-| `AutoPinner/` | Backfill worker that pins existing designs missing a `PinID` | `.NET 8` console (`AutoPinner/src/AutoPinner/AutoPinner.csproj`, `TargetFramework: net8.0`) | None — read-only of DDB designs, write-only of `PinID`/`PinterestStatus`; mirrors `AlbumBoards.csv` from `Uploader/` |
+| `cross-stitch-platform-docs/` | Planning + reference hub + shared data files | None for docs; `data/AlbumBoards.csv` is loaded at runtime by Uploader and AutoPinner via `PlatformConfig` | `platform-config.json`; `data/AlbumBoards.csv`; integration plans under `plan/integration/*`; task specs under `docs/tasks/*` |
+| `cross-stitch/` | Customer-facing site, AI Pinterest analytics agent | `npm` / Next.js / Vitest / Playwright (`d:/ann/Git/cross-stitch/package.json`) | DynamoDB schema dump (`d:/ann/Git/cross-stitch/TableDescription.txt`); web routes |
+| `Uploader/` | Operator publishing + maintenance UI | `.NET 8 WPF` (`Uploader/Uploader.csproj`, `targetFramework: net8.0-windows`) | Pinterest token writer; PDF→DDB ingest flow |
+| `AutoPinner/` | Backfill worker that pins existing designs missing a `PinID` | `.NET 8` console (`AutoPinner/src/AutoPinner/AutoPinner.csproj`, `TargetFramework: net8.0`) | None — read-only of DDB designs, write-only of `PinID`/`PinterestStatus`; uses canonical `AlbumBoards.csv` |
+| `CrossStitch.Shared/` | Shared Pinterest / OAuth / SES helpers | `.NET 8` classlib (`net8.0`) | `PinterestUploader`, `PinterestOAuthClient` and the on-disk token store format, `PatternLinkHelper`, `EmailHelper`, `PlatformConfig` |
 
 ## cross-stitch web app
 

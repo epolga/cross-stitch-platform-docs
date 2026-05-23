@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../AutoPinner"
+		},
+		{
+			"path": "../CrossStitch.Shared"
 		}
 	],
 	"settings": {}
