@@ -242,6 +242,24 @@ Estimated effort:
 
 ---
 
+# Milestone 7b — Elastic Beanstalk Platform Upgrade (cross-stitch.com web app)
+
+Status: Planned (low-priority operational maintenance).
+
+The EB environment `cross-stitch-com-env-clone` currently runs Node.js 20 / Amazon Linux 2023 / 6.9.0, which the AWS console flags as **"Deprecated platform branch"** (still receives maintenance updates but has a scheduled retirement date). Upgrade to the current supported branch before retirement.
+
+Planned work:
+* identify the current supported Node.js + Amazon Linux 2023 platform branch (or jump to Node.js 22 / AL2023 if available)
+* `eb upgrade` from the deployed ref, OR stand up a parallel environment on the new platform and DNS-swap if a longer soak is warranted (the latter keeps a quick rollback target available)
+* smoke-test cross-stitch.com after the swap: homepage, `/terms`, `/privacy-policy`, paid-download flow, GA + AdSense script load
+
+Estimated effort:
+~0.5 focused development day (plus a maintenance window).
+
+Note: distinct from Milestone 7. M7 moves the *cron agent* off the developer machine onto Lambda + EventBridge; this milestone upgrades the *web app* platform branch underneath EB, which keeps serving cross-stitch.com regardless of where the agent runs.
+
+---
+
 # Milestone 8 — Email / Notification Layer
 
 Status: Partially completed (anomaly notifications shipped 2026-05-23; SES delivery, daily summaries, and AI recommendation alerts remain).
