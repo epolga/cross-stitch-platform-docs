@@ -257,9 +257,10 @@ Remaining work:
 * AI recommendation alerts (notify on action changes — hold → decrease, etc.)
 * SES bounce / complaint handling
 * operational summaries
+* Telegram bot for operator alerts — alternate channel that reaches the phone, not just the desk. Initial scope: create the bot via BotFather, capture the bot token + Olga's chat id (both into `.env`), add `src/services/telegramClient.ts` with a `sendTelegramMessage(text)` helper, and route the Google-token weekly refresh reminder through it (currently a local Windows MessageBox at `automation/pinterest-agent/google-token-refresh-popup.ps1` — only useful when Olga is at the desk on Saturday morning). Follow-on: add anomaly alerts and the daily summary to the same bot.
 
 Estimated effort:
-~0.5 focused development day remaining.
+~1 focused development day remaining.
 
 ---
 
